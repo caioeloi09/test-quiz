@@ -110,3 +110,37 @@ def test_remove_invalid_choice_id_raises_exception():
     question.add_choice('a', False)
     with pytest.raises(Exception):
         question.remove_choice_by_id(999)
+
+# --- Commit 3: Testing with fixtures ---
+
+@pytest.fixture
+def question_with_choices():
+    question = Question(title='Qual é a capital do Brasil?', points=5)
+    question.add_choice('São Paulo', False)
+    question.add_choice('Brasília', True)
+    question.add_choice('Rio de Janeiro', False)
+    return question
+
+def test_fixture_question_has_three_choices(question_with_choices):
+    assert len(question_with_choices.choices) == 3
+
+def test_fixture_question_points(question_with_choices):
+    assert question_with_choices.points == 5
+
+def test_fixture_only_one_correct_choice(question_with_choices):
+    correct = [c for c in question_with_choices.choices if c.is_correct]
+    assert len(correct) == 1
+
+def test_fixture_correct_answer_is_brasilia(question_with_choices):
+    correct = [c for c in question_with_choices.choices if c.is_correct]
+    assert correct[0].text == 'Brasília'
+
+def test_fixture_selecting_correct_choice(question_with_choices):
+    correct_id = [c.id for c in question_with_choices.choices if c.is_correct][0]
+    result = question_with_choices.correct_selected_choices([correct_id])
+    assert correct_id in result
+
+def test_fixture_selecting_wrong_choice_returns_empty(question_with_choices):
+    wrong_id = [c.id for c in question_with_choices.choices if not c.is_correct][0]
+    result = question_with_choices.correct_selected_choices([wrong_id])
+    assert result == []
